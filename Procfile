@@ -1,1 +1,1 @@
-web: python -m almanax
+worker: python -m almanax
