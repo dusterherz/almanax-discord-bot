@@ -1,24 +1,58 @@
-# things.py
+import os
+import asyncio
+import discord
+import imgkit
+from datetime import timedelta, datetime, date
 
-# Let's get this party started!
-import falcon
-
-
-# Falcon follows the REST architectural style, meaning (among
-# other things) that you think in terms of resources and state
-# transitions, which map to HTTP verbs.
-class AlmanaxResource(object):
-    def on_get(self, req, resp):
-        """Handles GET requests"""
-        resp.status = falcon.HTTP_200  # This is the default status
-        resp.body = ('test')
+CHANNEL_ID = int(os.environ.get('CHANNEL_ID'))
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
 
 
-# falcon.API instances are callable WSGI apps
-app = falcon.API()
+class MyClient(discord.Client):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-# Resources are represented by long-lived class instances
-almanax = AlmanaxResource()
+        # create the background task and run it in the background
+        self.bg_task = self.loop.create_task(self.my_background_task())
 
-# things will handle all requests to the '/things' URL path
-app.add_route('/almanax', almanax)
+    async def on_ready(self):
+        print('Logged in as')
+        print(self.user.name)
+        print('------')
+    
+    async def my_background_task(self):
+        await self.wait_until_ready()
+        channel = self.get_channel(CHANNEL_ID) # The channel id that we want the bot to send message
+        print('Background task started')
+        print('------')
+        while not self.is_closed():
+            # Get image from Dofus Almanax Widget (https://almanax.ordredevlad.fr/)
+            img_options = {
+                'format': 'jpg',
+                'encoding': "UTF-8",
+                'crop-w': '312',
+                'crop-h': '192',
+                'crop-x': '8',
+                'crop-y': '8',
+            }
+            img_path = f'almanax-{date.today().strftime("%d-%m-%Y")}.jpg'
+            imgkit.from_url('https://almanax.ordredevlad.fr/widget.php?lang=fr&type=full&slide=5&theme=taktik', img_path, options=img_options)
+
+            # Send image to Discord
+            print('Send a new Almanax day')
+            file = discord.File(img_path)
+            await channel.send(file=file)
+
+            # Delete img file
+            os.remove(img_path)
+
+            # Wait until midnight for next message
+            now = datetime.now()
+            tommorrow = now + timedelta(days=1)
+            duration = tommorrow.replace(hour=0, minute=0, second=0) - now
+            print(f'Waiting {duration.total_seconds()} seconds.')
+            await asyncio.sleep(duration.total_seconds())
+
+
+client = MyClient()
+client.run(BOT_TOKEN)

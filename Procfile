@@ -1,1 +1,1 @@
-web: gunicorn almanax:app
+web: python -m almanax

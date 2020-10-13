@@ -8,7 +8,7 @@ flake8 = "*"
 
 [packages]
 "discord.py" = "*"
-falcon = "*"
+imgkit = "*"
 gunicorn = "*"
 
 [requires]
