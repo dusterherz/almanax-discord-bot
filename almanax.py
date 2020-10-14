@@ -26,17 +26,17 @@ class MyClient(discord.Client):
         print('Background task started')
         print('------')
         while not self.is_closed():
-            # Get image from Dofus Almanax Widget (https://almanax.ordredevlad.fr/)
             img_options = {
                 'format': 'jpg',
                 'encoding': "UTF-8",
-                'crop-w': '312',
-                'crop-h': '192',
-                'crop-x': '8',
-                'crop-y': '8',
+                'crop-w': '455',
+                'crop-h': '250',
+                'crop-x': '250',
+                'crop-y': '545',
+                'user-style-sheet': 'hide.css'
             }
             img_path = f'almanax-{date.today().strftime("%d-%m-%Y")}.jpg'
-            imgkit.from_url('https://almanax.ordredevlad.fr/widget.php?lang=fr&type=full&slide=5&theme=taktik', img_path, options=img_options)
+            imgkit.from_url('http://www.krosmoz.com/fr/almanax', img_path, options=img_options)
 
             # Send image to Discord
             print('Send a new Almanax day')
