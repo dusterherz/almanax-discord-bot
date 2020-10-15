@@ -26,6 +26,7 @@ class MyClient(discord.Client):
         print('Background task started')
         print('------')
         while not self.is_closed():
+            print('Preparing a new almanax')
             img_options = {
                 'format': 'jpg',
                 'encoding': "UTF-8",
@@ -35,8 +36,10 @@ class MyClient(discord.Client):
                 'crop-y': '545',
                 'user-style-sheet': 'hide.css'
             }
-            img_path = f'almanax-{date.today().strftime("%d-%m-%Y")}.jpg'
-            imgkit.from_url('http://www.krosmoz.com/fr/almanax', img_path, options=img_options)
+            almanax_date = datetime.now() + timedelta(hours=3)
+            string_date = almanax_date.strftime("%Y-%m-%d")
+            img_path = f'almanax-{string_date}.jpg'
+            imgkit.from_url(f'http://www.krosmoz.com/fr/almanax/{string_date}', img_path, options=img_options)
 
             # Send image to Discord
             print('Send a new Almanax day')
@@ -47,11 +50,9 @@ class MyClient(discord.Client):
             os.remove(img_path)
 
             # Wait until midnight for next message
-            now = datetime.now()
-            tommorrow = now + timedelta(days=1)
-            duration = tommorrow.replace(hour=0, minute=0, second=0) - now
+            duration = datetime.now().replace(hour=23, minute=0, second=0) - datetime.now()
             print(f'Waiting {duration.total_seconds()} seconds.')
-            await asyncio.sleep(duration.total_seconds())
+            await asyncio.sleep(duration)
 
 
 client = MyClient()
