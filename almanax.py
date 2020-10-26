@@ -3,9 +3,12 @@ import asyncio
 import discord
 import imgkit
 from datetime import timedelta, datetime, date
+import logging
 
 CHANNEL_ID = int(os.environ.get('CHANNEL_ID'))
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
+
+logging.basicConfig(level=logging.INFO, filename='log', filemode='a+', datefmt='%Y-%m-%d %H:%M:%S', format='%(levelname)s: %(asctime)s - %(message)s')
 
 
 class MyClient(discord.Client):
@@ -16,17 +19,17 @@ class MyClient(discord.Client):
         self.bg_task = self.loop.create_task(self.my_background_task())
 
     async def on_ready(self):
-        print('Logged in as')
-        print(self.user.name)
-        print('------')
+        logging.info('Logged in as')
+        logging.info(self.user.name)
+        logging.info('------')
     
     async def my_background_task(self):
         await self.wait_until_ready()
         channel = self.get_channel(CHANNEL_ID) # The channel id that we want the bot to send message
-        print('Background task started')
-        print('------')
+        logging.info('Background task started')
+        logging.info('------')
         while not self.is_closed():
-            print('Preparing a new almanax')
+            logging.info('Preparing a new almanax')
             img_options = {
                 'format': 'jpg',
                 'encoding': "UTF-8",
@@ -42,7 +45,7 @@ class MyClient(discord.Client):
             imgkit.from_url(f'http://www.krosmoz.com/fr/almanax/{string_date}', img_path, options=img_options)
 
             # Send image to Discord
-            print('Send a new Almanax day')
+            logging.info('Send a new Almanax day')
             file = discord.File(img_path)
             await channel.send(file=file)
 
@@ -50,10 +53,12 @@ class MyClient(discord.Client):
             os.remove(img_path)
 
             # Wait until midnight for next message
-            duration = datetime.now().replace(hour=23, minute=0, second=0) - datetime.now()
-            print(f'Waiting {duration.total_seconds()} seconds.')
-            await asyncio.sleep(duration)
+            duration = datetime.now().replace(hour=23, minute=0, second=0) + timedelta(days=1) - datetime.now()
+            logging.info(f'Waiting {duration.total_seconds()} seconds.')
+            await asyncio.sleep(duration.total_seconds())
+        logging.info('Closed connection')
 
 
 client = MyClient()
 client.run(BOT_TOKEN)
+
